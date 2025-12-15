@@ -22,14 +22,14 @@ public class Account {
 
     private Long accountBalance;
 
-    @Size(min = 2, max = 10)
+    @Size(min = 2, max = 10, message = "{account.owner.name.size}")
     private String accountOwnerName;
 
-    @Email
+    @Email(message = "{account.owner.mail.email}")
     private String accountOwnerMail;
 
 
     @Column(nullable = false)
-    @NotBlank
+    @NotBlank(message = "{account.owner.address.notblank}")
     private String accountOwnerAddress;
 }

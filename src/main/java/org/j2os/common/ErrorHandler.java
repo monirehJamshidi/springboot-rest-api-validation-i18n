@@ -1,23 +1,31 @@
 package org.j2os.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.j2os.common.dto.ErrorResponse;
 import org.j2os.common.dto.ValidationError;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @RestControllerAdvice
 @Slf4j
+@RequiredArgsConstructor
 public class ErrorHandler {
+
+    private final MessageSource messageSource;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> validationError(
@@ -30,6 +38,10 @@ public class ErrorHandler {
                 .map(err -> new ValidationError(
                         err.getField(),
                         err.getDefaultMessage()
+//                        messageSource.getMessage(
+//                                err,
+//                                LocaleContextHolder.getLocale()
+//                        )//err.getDefaultMessage()
                 ))
                 .toList();
 
@@ -40,7 +52,13 @@ public class ErrorHandler {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setError("VALIDATION_ERROR");
         response.setErrorCode(errorCode.getCode());
-        response.setMessage(errorCode.getMessage());
+        response.setMessage(
+                messageSource.getMessage(
+                        "validation.failed",//errorCode.getMessage(),
+                        null,
+                        LocaleContextHolder.getLocale()
+                )
+                );
         response.setPath(request.getRequestURI());
         response.setValidationErrors(fieldErrors);
 
